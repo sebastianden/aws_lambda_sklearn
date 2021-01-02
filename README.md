@@ -15,11 +15,11 @@ In the completed set-up a user is able to send HTTP requests to API Gateway trig
 
 ## Contents
 
-- [0. Prerequisites](#0.-prerequisites)
-- [1. Setting up an AWS Lambda layer](#1.-setting-up-an-aws-lambda-layer)
-- [2. Training a simple ML model](#2.-training-a-simple-ml-model)
-- [3. Setting up the Lambda function](#3.-setting-up-the-lambda-function)
-- [4. Configuring API Gateway](#4.-configuring-api-gateway)
+- [0. Prerequisites](README.md#0.-prerequisites)
+- [1. Setting up an AWS Lambda layer](README.md#1.-setting-up-an-aws-lambda-layer)
+- [2. Training a simple ML model](README.md#2.-training-a-simple-ml-model)
+- [3. Setting up the Lambda function](README.md#3.-setting-up-the-lambda-function)
+- [4. Configuring API Gateway](README.md#4.-configuring-api-gateway)
 
 
 ## 0. Prerequisites
