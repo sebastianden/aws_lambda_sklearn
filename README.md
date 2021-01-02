@@ -1,7 +1,7 @@
 # Serving a Machine Learning Model with AWS Lambda
 
 This guide explains how to serve a [sci-kit learn](https://scikit-learn.org/stable/) ML model via 
-[AWS Lambda](https://aws.amazon.com/lambda/) and [AWS API Gateway](https://aws.amazon.com/api-gateway/). Although the example is quite specific and the ML model simple, the method can be easily adopted for more difficult models. The concept of building an AWL Lambda layer can also be extended to other python package dependencies.
+[AWS Lambda](https://aws.amazon.com/lambda/) and [AWS API Gateway](https://aws.amazon.com/api-gateway/). Although the example is quite specific and the ML model simple, the method can easily be adopted for more complex models. The concept of building an AWS Lambda layer can also be extended to other python package dependencies.
 
 <div align="center">
 	<img width=500 src="images/architecture.png" alt="architecture">
@@ -11,7 +11,7 @@ This guide explains how to serve a [sci-kit learn](https://scikit-learn.org/stab
     <br>
 </div>
 
-In the completed set-up a user is able to send HTTP requests to API Gateway triggering the execution of a Lambda function. This Lambda function will load the saved pre-trained model, load the dependencies from the right layer and make a prediction based on the input parameters provided by the user. The user recieves the result as request response.
+In the completed setup a user is able to send HTTP requests to API Gateway triggering the execution of a Lambda function. This Lambda function will load the saved pre-trained model, load the dependencies from the right layer and make a prediction based on the input parameters provided by the user. The user receives the result as request response.
 
 ## Contents
 
@@ -27,18 +27,18 @@ In the completed set-up a user is able to send HTTP requests to API Gateway trig
 Not many things are needed in order to get started:
 
 - An AWS Account
-- Local installation of [Python](https://www.python.org/) and [pip](https://pip.pypa.io/en/stable/) (to download the python packages)
+- A local installation of [Python](https://www.python.org/) and [pip](https://pip.pypa.io/en/stable/) (to download the python packages)
 
 ## 1. Setting up an AWS Lambda layer
 Lambda layers are a way of providing your Lambda function with the dependencies it needs to execute. In our case that would be the `scikit-learn` package, which in turn depends on a bunch of other packages.
-Luckily we have pip to figure out the dependency tree for us. The only thing we have to do is specify the right version of the packages. There is a potential pitfall in this step (especially if you're working on a Windows machine) as you might think that you can simply reuse the packages already installed on your machine. However, AWS Lambda is running in a Linux environment, so the Python packages for Windows __won't work__! Instead we can ask pip to download the Linux versions of the dependencies we want by specifying `--platform manylinux1_x86_64`.  
+Luckily we have pip to figure out the dependency tree for us. The only thing we have to do is specify the right versions of the packages. There is a potential pitfall in this step (especially if you're working on a Windows machine) as you might think that you can simply reuse the packages already installed on your machine. However, AWS Lambda is running in a Linux environment, so the Python packages for Windows __won't work__! Instead we can ask pip to download the Linux versions of the dependencies we want by specifying `--platform manylinux1_x86_64`.  
 
 ```
 pip download --python-version 38 --abi cp38 --platform manylinux1_x86_64 --only-binary=:all: --no-binary=:none: scikit-learn
 ```
-Note: This example assumes our Lamda function is running on Pyton 3.8. If that is not the case simple adjust the `--python-version` ans `--abi` arguments. Pip will download the package `.whl` files to the location you are currently at. By specifying `--only-binary=:all: --no-binary=:none:` we tell pip that we also want to download all the packages that the `sklearn` package depends on.
+Note: This example assumes our Lamda function is running on Pyton 3.8. If that is not the case simply adjust the `--python-version` and `--abi` arguments. Pip will download the packaged `.whl` files to the location you are currently at. By specifying `--only-binary=:all: --no-binary=:none:` we tell pip that we also want to download all the packages that the `sklearn` package depends on.
 
-Now we're nearly ready to make a Lambda layer. The only things we have to do now is unpack the `.whl` files and put them into the right folder structure. Unpacking is easy. We can do that on a Linux machine by calling `unzip path/to/file.whl` and on Windows by renaming `.whl` to `.zip` and simply extracting the files. Repeat this step for each package (in our case it should be `joblib`, `numpy`, `scikit_learn`, `scipy` and `threadpoolctl`). All folders called `*.dist-info` can safely be deleted. 
+Now we're nearly ready to make a Lambda layer. The only things we have to do now is to unpack the `.whl` files and put them into the right folder structure. Unpacking is easy. We can do this on a Linux machine by calling `unzip path/to/file.whl` and on Windows by renaming `.whl` to `.zip` and simply extracting the files. Repeat this step for each package (in our case it should be `joblib`, `numpy`, `scikit_learn`, `scipy` and `threadpoolctl`). All folders called `*.dist-info` can safely be deleted. 
 
 In order to make our Lambda function aware of the provided packages they have to be organized into a specific folder structure. The following diagram shows the structure and where to place all the extracted packages:
 
@@ -72,7 +72,7 @@ Congrats! You successfully created a Lambda layer!
 Now to some Data Science. Before we can serve a ML model and do inference, we have to create and train it. This toy example will train a Random Forest classifier on the [Iris data set](https://en.wikipedia.org/wiki/Iris_flower_data_set) and save the pretrained model as a file.
 To view the whole code go to [train.py](src/train.py).
 
-First we import some dependencies and load the dataset from the preinstalled datasets in `sklearn`. 
+First we import some dependencies and load the dataset from the pre-installed datasets in `sklearn`. 
 ```python
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
@@ -98,7 +98,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random
 rfc = RandomForestClassifier()
 rfc = rfc.fit(X_train,y_train)
 ```
-We can validate the models performace by checking the testing accuracy:
+We can validate the models' performace by checking the testing accuracy:
 ```python
 # Evaluate the testing accuracy
 y_pred = rfc.predict(X_test)
@@ -115,7 +115,8 @@ dump(rfc, './myLambdaFunction/model.joblib')
 ```
 
 ## 3. Setting up the Lambda function
-Now we have nearly all pieces of the puzzle. The only thing missing is the Lambda function itself. In our case this will be another Python file containing a function following a special syntax. The so-called Lambda Handler. Each time the Lambda function is triggerd this function is executed and is provided input via the `event` variable. 
+Now we have nearly all pieces of the puzzle. The only thing missing is the Lambda function itself. In our case this will be another Python file containing a function following a special syntax. The so-called Lambda Handler. Each time the Lambda function is triggerd this function is executed and is provided input via the `event` variable.
+
 ```python
 def lambda_handler(event, context):
     # Load the features from the event dict
@@ -147,14 +148,14 @@ In the AWS Management Console search for "AWS Lambda". In the left-hand menu cho
     <br>
 </div>
 
-Under "Function code" click the "Action" drop-down and choose "Upload a .zip file". 
+Under "Function code" click the "Actions" drop-down and choose "Upload a .zip file". 
 
 <div align="center">
 	<img width=800 src="images/function2.PNG" alt="function2">
     <br>
 </div>
 
-Upload the `.zip`file containing "lambda_function.py" and model.joblib". 
+Upload the `.zip` file containing "lambda_function.py" and "model.joblib". 
 
 You can test the function by creating a Test. Go to Test > Configure Events > Create new test event. Provide a test name and the following body:
 ```JSON
@@ -165,7 +166,7 @@ You can test the function by creating a Test. Go to Test > Configure Events > Cr
   "pw": 2.3
 }
 ```
-The four input parameters correspond to the four features the model assuems as input (sepal-length, sepal-width, petal-length, petal-width).
+The four input parameters correspond to the four features the model assumes as input (sepal-length, sepal-width, petal-length, petal-width).
 If you run the test the execution result should read:
 ```JSON
 Response:
@@ -177,7 +178,7 @@ Response:
 
 ## 4. Configuring API Gateway
 
-This is great!. Our Lambda function works and is __hosting a ML model__! However, it has no way to communicate with the outside world and is pretty useless. Thus we need to define a trigger to activate the execution of the function and figure a way to input data. AWS offers offers an integrated API service called API Gateway. We can easily define a API Gateway trigger by clicking "Add trigger" in the lambda function designer and select API Gateway. 
+This is great!. Our Lambda function works and is __hosting a ML model__! However, it has no way to communicate with the outside world and is pretty useless. Thus, we need to define a trigger to activate the execution of the function and figure a way to input data. AWS offers offers an integrated API service called API Gateway. We can easily define an API Gateway trigger by clicking "Add trigger" in the lambda function designer and select API Gateway. 
 
 <div align="center">
 	<img width=500 src="images/api1.PNG" alt="api1">
@@ -213,7 +214,7 @@ In the following setup process choose your Lambda function in the field "Lambda 
 }
 ```
 
-Once you deployed your API ("Actions"-drop-down > Deploy API) it is able to recieve input via POST requests, trigger the Lambda function and send the result back as response message. You can validate the whole process by using e.g. [Postman](https://www.postman.com/downloads/) to interact with the API.
+Once you deployed your API ("Actions"-drop-down > Deploy API) it is able to receive input via POST requests, trigger the Lambda function and send the result back as response message. You can validate the whole process by using e.g. [Postman](https://www.postman.com/downloads/) to interact with the API.
 
 ### 4.2 GET Request
 In case you would rather input the data directly from your browser via the URL you can also configure your API to accept GET requests. Click the "Actions" drop-down menu and choose "Create Method". In the created drop-down menu choose "GET". Just like in the instructions for the POST method choose your Lambda function in the field "Lambda Function".
@@ -225,7 +226,7 @@ Open the "Method Request" field and provide the input variables in the "URL Quer
     <br>
 </div>
 
-Go back and open the "Integration Request" field. Under the "Mapping Templates" section add a new mapping tempalte of type "application/json". And fill in the following template:
+Go back and open the "Integration Request" field. Under the "Mapping Templates" section add a new mapping template of type "application/json". And fill in the following template:
 ```JSON
 {
     "sl":  "$input.params('sl')",
@@ -240,7 +241,7 @@ Go back and open the "Integration Request" field. Under the "Mapping Templates" 
     <br>
 </div>
 
-Click "Save". You can test the API by clicking "Test" in the "Method Execution" window and provide the following as "Query Strings".
+Click "Save". You can test the API by clicking "Test" in the "Method Execution" window and provide the following as "Query Strings":
 ```
 sl=6.9&sw=3.1&pl=5.1&pw=2.3
 ```
@@ -248,7 +249,7 @@ Deploy your API ("Actions"-drop-down > Deploy API). And open a new tab in your b
 ```
 https://<YOUR_API_URL>/myLambdaFunction/?sl=6.9&sw=3.1&pl=5.1&pw=2.3
 ```
-You should recieve a response in the following form:
+You should receive a response in the following form:
 ```
 {"statusCode": 200, "body": "virginica"}
 ```
