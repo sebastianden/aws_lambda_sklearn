@@ -165,6 +165,7 @@ You can test the function by creating a Test. Go to Test > Configure Events > Cr
   "pw": 2.3
 }
 ```
+The four input parameters correspond to the four features the model assuems as input (sepal-length, sepal-width, petal-length, petal-width).
 If you run the test the execution result should read:
 ```JSON
 Response:
@@ -201,7 +202,7 @@ There are different ways to communicate with the REST API. POST and GET requests
     <br>
 </div>
 
-In the following setup process choose choose your Lambda function in the field "Lambda Function". You can test the execution of the API and the Lambda function by clicking on "Test" in the main menu of the POST method and providing the same "Request Body" that we used already earier:
+In the following setup process choose your Lambda function in the field "Lambda Function". You can test the execution of the API and the Lambda function by clicking on "Test" in the main menu of the POST method and providing the same "Request Body" that we used already earier:
 
 ```JSON
 {
@@ -215,4 +216,41 @@ In the following setup process choose choose your Lambda function in the field "
 Once you deployed your API ("Actions"-drop-down > Deploy API) it is able to recieve input via POST requests, trigger the Lambda function and send the result back as response message. You can validate the whole process by using e.g. [Postman](https://www.postman.com/downloads/) to interact with the API.
 
 ### 4.2 GET Request
-In case you would rather input the data directly from your browser via the URL you can also configure your API to accept GET requests.
+In case you would rather input the data directly from your browser via the URL you can also configure your API to accept GET requests. Click the "Actions" drop-down menu and choose "Create Method". In the created drop-down menu choose "GET". Just like in the instructions for the POST method choose your Lambda function in the field "Lambda Function".
+
+Open the "Method Request" field and provide the input variables in the "URL Query String Parameters" section. Tick the "Required" boxes.
+
+<div align="center">
+	<img width=500 src="images/api4.PNG" alt="api4">
+    <br>
+</div>
+
+Go back and open the "Integration Request" field. Under the "Mapping Templates" section add a new mapping tempalte of type "application/json". And fill in the following template:
+```JSON
+{
+    "sl":  "$input.params('sl')",
+    "sw":  "$input.params('sw')",
+    "pl":  "$input.params('pl')",
+    "pw":  "$input.params('pw')"
+}
+```
+
+<div align="center">
+	<img width=500 src="images/api5.PNG" alt="api5">
+    <br>
+</div>
+
+Click "Save". You can test the API by clicking "Test" in the "Method Execution" window and provide the following as "Query Strings".
+```
+sl=6.9&sw=3.1&pl=5.1&pw=2.3
+```
+Deploy your API ("Actions"-drop-down > Deploy API). And open a new tab in your browser. Enter the following URL replacing `<YOUR_API_URL>`:
+```
+https://<YOUR_API_URL>/myLambdaFunction/?sl=6.9&sw=3.1&pl=5.1&pw=2.3
+```
+You should recieve a response in the following form:
+```
+{"statusCode": 200, "body": "virginica"}
+```
+
+Good job! You did it! You deployed your own Machine Learning model in the cloud and managed to make it communicate with the world. The best part is: AWS is doing all the computing for you and will ensure that your model has a high availability and scales with your application!
