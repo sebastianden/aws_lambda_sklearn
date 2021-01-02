@@ -15,11 +15,11 @@ In the completed set-up a user is able to send HTTP requests to API Gateway trig
 
 ## Contents
 
-- [0. Prerequisites](README.md##0.-prerequisites)
-- [1. Setting up an AWS Lambda layer](README.md##1.-setting-up-an-aws-lambda-layer)
-- [2. Training a simple ML model](README.md##2.-training-a-simple-ml-model)
-- [3. Setting up the Lambda function](README.md##3.-setting-up-the-lambda-function)
-- [4. Configuring API Gateway](README.md##4.-configuring-api-gateway)
+- [0. Prerequisites](README.md#0-prerequisites)
+- [1. Setting up an AWS Lambda layer](README.md#1-setting-up-an-aws-lambda-layer)
+- [2. Training a simple ML model](README.md#2-training-a-simple-ml-model)
+- [3. Setting up the Lambda function](README.md#3-setting-up-the-lambda-function)
+- [4. Configuring API Gateway](README.md#4-configuring-api-gateway)
 
 
 ## 0. Prerequisites
@@ -143,14 +143,14 @@ You can view the whole function in [lambda_function.py](src/myLambdaFunction/lam
 In the AWS Management Console search for "AWS Lambda". In the left-hand menu choose "Functions" and click "Create function". Give the function a name and select a runtime.
 
 <div align="center">
-	<img width=800 src="images/function1.PNG" alt="layer1">
+	<img width=800 src="images/function1.PNG" alt="function1">
     <br>
 </div>
 
 Under "Function code" click the "Action" drop-down and choose "Upload a .zip file". 
 
 <div align="center">
-	<img width=800 src="images/function2.PNG" alt="layer1">
+	<img width=800 src="images/function2.PNG" alt="function2">
     <br>
 </div>
 
@@ -176,4 +176,43 @@ Response:
 
 ## 4. Configuring API Gateway
 
-This is great!. Our Lambda function works and is __hosting a ML model__! However, it has no way to communicate with the outside world and is pretty useless. Thus we need to define a trigger to activate the execution of the function and figure a way to input data.
+This is great!. Our Lambda function works and is __hosting a ML model__! However, it has no way to communicate with the outside world and is pretty useless. Thus we need to define a trigger to activate the execution of the function and figure a way to input data. AWS offers offers an integrated API service called API Gateway. We can easily define a API Gateway trigger by clicking "Add trigger" in the lambda function designer and select API Gateway. 
+
+<div align="center">
+	<img width=500 src="images/api1.PNG" alt="api1">
+    <br>
+</div>
+
+Choose "REST API" as API type and "Open" as Security and click "Create".
+
+<div align="center">
+	<img width=500 src="images/api2.PNG" alt="api2">
+    <br>
+</div>
+
+Back in the terminal of your Lambda function click on the link of your newly created API in the "API-Gateway" section.
+This will bring you directly to the configuration terminal for your API. 
+
+### 4.1 POST Request
+There are different ways to communicate with the REST API. POST and GET requests are two of the most common. To configure your API to accept POST requests click the "Actions" drop-down menu and choose "Create Method". In the created drop-down menu choose "POST".
+
+<div align="center">
+	<img width=500 src="images/api3.PNG" alt="api3">
+    <br>
+</div>
+
+In the following setup process choose choose your Lambda function in the field "Lambda Function". You can test the execution of the API and the Lambda function by clicking on "Test" in the main menu of the POST method and providing the same "Request Body" that we used already earier:
+
+```JSON
+{
+  "sl": 6.9,
+  "sw": 3.1,
+  "pl": 5.1,
+  "pw": 2.3
+}
+```
+
+Once you deployed your API ("Actions"-drop-down > Deploy API) it is able to recieve input via POST requests, trigger the Lambda function and send the result back as response message. You can validate the whole process by using e.g. [Postman](https://www.postman.com/downloads/) to interact with the API.
+
+### 4.2 GET Request
+In case you would rather input the data directly from your browser via the URL you can also configure your API to accept GET requests.
