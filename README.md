@@ -20,6 +20,7 @@ In the completed setup a user is able to send HTTP requests to API Gateway trigg
 - [2. Training a simple ML model](README.md#2-training-a-simple-ml-model)
 - [3. Setting up the Lambda function](README.md#3-setting-up-the-lambda-function)
 - [4. Configuring API Gateway](README.md#4-configuring-api-gateway)
+- [Appendix: Memory and Timeout settings](README.md#appendix-memory-and-timeout-settings)
 
 
 ## 0. Prerequisites
@@ -255,3 +256,24 @@ You should receive a response in the following form:
 ```
 
 Good job! You did it! You deployed your own Machine Learning model in the cloud and managed to make it communicate with the world. The best part is: AWS is doing all the computing for you and will ensure that your model has a high availability and scales with your application!
+
+## Appendix: Memory and Timeout settings
+
+We haven't touched upon this topic before as AWS took care of it automatically and it wasn't a big issue. However, once you want to serve more complex, computationally heavy models, the CPU and timeout settings could become a bottleneck or even lead to a failure if not configured correctly. When we set up our Lambda function it was configured with the default parameters for CPU Memory (128 MB) and Timeout (3 seconds). This is good enough for our simple model and still guarantees a response in a reasonable amount of time. 
+<div align="center">
+	<img width=500 src="images/settings.PNG" alt="settings">
+    <br>
+    The Memory and Timeout can be adjusted in the Basic settings of your lambda function. Keep in mind that more memory will enable a faster response but also increase your costs.
+    <br>
+    <br>
+</div>
+
+We can check response times of our lambda functions by enabling active tracing and viewing the trace logs in [AWS X-Ray](https://aws.amazon.com/xray/). In the "Monitoring tools" of your Lambda function click "Edit" and switch on "Active tracing" under "AWS X-Ray". In the "Monitoring" tab of your Lambda function you can now choose "View traces in X-Ray".
+
+<div align="center">
+	<img width=800 src="images/xray.PNG" alt="xray">
+    <br>
+    We can see that providing our Lambda function with four times the available CPU memory leads to an over four times faster response. Note: Just ignore the traces with response time > 3 seconds, those are "cold starts". 
+    <br>
+    <br>
+</div>
