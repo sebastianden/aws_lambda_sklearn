@@ -1,12 +1,12 @@
 # Serving a Machine Learning Model with AWS Lambda
 
 This guide explains how to serve a [sci-kit learn](https://scikit-learn.org/stable/) ML model via 
-[AWS Lambda](https://aws.amazon.com/lambda/) and [AWS API Gateway](https://aws.amazon.com/api-gateway/). Although the example is quite specific and the ML model simple, the method can easily be adopted for more complex models. The concept of building an AWS Lambda layer can also be extended to other python package dependencies.
+[AWS Lambda](https://aws.amazon.com/lambda/) and [Amazon API Gateway](https://aws.amazon.com/api-gateway/). Although the example is quite specific and the ML model simple, the method can easily be adopted for more complex models. The concept of building an AWS Lambda layer can also be extended to other python package dependencies.
 
 <div align="center">
 	<img width=500 src="images/architecture.png" alt="architecture">
 	<br>
-    Application architecture with AWS API Gateway and AWS Lambda.
+    Application architecture with Amazon API Gateway and AWS Lambda.
     <br>
     <br>
 </div>
