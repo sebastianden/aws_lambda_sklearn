@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Serverless application with API Gateway and Lambda function.
+Resources:
+  MyLambdaFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Layers:
+        - !Ref SklearnLayer
+      Runtime: python3.8
+      CodeUri: src/myLambdaFunction
+      Description: AWS Lambda function with ML model.
+      MemorySize: 128
+      Timeout: 3
+      Events:
+        MyApiGateway:
+          Type: Api
+          Properties:
+            Path: /MyLambdaFunction
+            Method: POST
+  SklearnLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: SklearnLayer
+      Description: Dependencies for ML app (scikit-learn)
+      ContentUri: src/dependencies
+      CompatibleRuntimes:
+        - python3.8
+      RetentionPolicy: Retain

@@ -127,3 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Exclude lambda layers
+src/dependencies/
+# Generated cloudformation template
+src/gen/

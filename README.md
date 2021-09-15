@@ -257,7 +257,7 @@ You should receive a response in the following form:
 
 Good job! You did it! You deployed your own Machine Learning model in the cloud and managed to make it communicate with the world. The best part is: AWS is doing all the computing for you and will ensure that your model has a high availability and scales with your application!
 
-## Appendix: Memory and Timeout settings
+## Appendix 1: Memory and Timeout settings
 
 We haven't touched upon this topic before as AWS took care of it automatically and it wasn't a big issue. However, once you want to serve more complex, computationally heavy models, the CPU and timeout settings could become a bottleneck or even lead to a failure if not configured correctly. When we set up our Lambda function it was configured with the default parameters for CPU Memory (128 MB) and Timeout (3 seconds). This is good enough for our simple model and still guarantees a response in a reasonable amount of time. 
 <div align="center">
@@ -277,3 +277,20 @@ We can check response times of our lambda functions by enabling active tracing a
     <br>
     <br>
 </div>
+
+## Appendix 2: Serverless Application Model
+
+Make a new S3 Bucket
+```
+aws s3 mb s3://sam-sklearn-lambda-function
+```
+
+Package the application and upload it
+```
+sam package --s3-bucket sam-sklearn-lambda-function --template-file template.yaml --output-template-file src/gen/cloudformation.yaml
+```
+
+Deploy the serverless application
+```
+sam deploy --template-file src\gen\cloudformation.yaml --stack-name <YOUR STACK NAME> --capabilities CAPABILITY_IAM
+```
