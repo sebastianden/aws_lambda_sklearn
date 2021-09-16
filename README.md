@@ -116,28 +116,30 @@ dump(rfc, './myLambdaFunction/model.joblib')
 ```
 
 ## 3. Setting up the Lambda function
-Now we have nearly all pieces of the puzzle. The only thing missing is the Lambda function itself. In our case this will be another Python file containing a function following a special syntax. The so-called Lambda Handler. Each time the Lambda function is triggerd this function is executed and is provided input via the `event` variable.
+Now we have nearly all pieces of the puzzle. The only thing missing is the Lambda function itself. In our case this will be another Python file containing a function following a special syntax. The so-called Lambda Handler. Each time the Lambda function is triggerd this function is executed and is provided input via the `event` variable. Notice that the model is loaded outside the lambda function handler. Lambda functions that are triggered repeatedly reuse their context. This leads to a performance increase, as the model doesn't necessarily have to be reloaded every time.
 
 ```python
+target_names = ['setosa', 'versicolor', 'virginica']
+
+rfc = load('model.joblib')
+
+
 def lambda_handler(event, context):
-    # Load the features from the event dict
     sepal_length = float(event['sl'])
     sepal_width = float(event['sw'])
     petal_length = float(event['pl'])
     petal_width = float(event['pw'])
-    # Set class names
-    target_names = ['setosa','versicolor','virginica']
-    # Load the pre-trained model
-    rfc = load('model.joblib')
-    # Predict a class based on the input
+
     y = rfc.predict([[sepal_length, sepal_width, petal_length, petal_width]])[0]
-    # Turn encoding into class string
     c = target_names[y]
     print(c)
-    # Return result as JSON
+
     return {
         'statusCode': 200,
-        'body': c
+        'body': c,
+        'headers': {
+            'Content-Type': 'application/json',
+        },
     }
 ```
 You can view the whole function in [lambda_function.py](src/myLambdaFunction/lambda_function.py). Zip "lambda_function.py" and model.joblib" before going on to the next step.
@@ -292,5 +294,5 @@ sam package --s3-bucket sam-sklearn-lambda-function --template-file template.yam
 
 Deploy the serverless application
 ```
-sam deploy --template-file src\gen\cloudformation.yaml --stack-name <YOUR STACK NAME> --capabilities CAPABILITY_IAM
+sam deploy --template-file src\gen\cloudformation.yaml --stack-name sam-stack --capabilities CAPABILITY_IAM
 ```
