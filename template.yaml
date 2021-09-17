@@ -24,7 +24,8 @@ Resources:
     Properties:
       LayerName: SklearnLayer
       Description: Dependencies for ML app (scikit-learn)
-      ContentUri: src/dependencies
+      ContentUri: src/SklearnLayer
       CompatibleRuntimes:
         - python3.8
-      RetentionPolicy: Retain
+    Metadata:
+      BuildMethod: python3.8

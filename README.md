@@ -1,6 +1,6 @@
 # Serving a Machine Learning Model with AWS Lambda
 
-This guide explains how to serve a [sci-kit learn](https://scikit-learn.org/stable/) ML model via 
+This guide explains how to serve a [sci-kit learn](https://scikit-learn.org/stable/) ML model via
 [AWS Lambda](https://aws.amazon.com/lambda/) and [Amazon API Gateway](https://aws.amazon.com/api-gateway/). Although the example is quite specific and the ML model simple, the method can easily be adopted for more complex models. The concept of building an AWS Lambda layer can also be extended to other python package dependencies.
 
 <div align="center">
@@ -32,30 +32,30 @@ Not many things are needed in order to get started:
 
 ## 1. Setting up an AWS Lambda layer
 Lambda layers are a way of providing your Lambda function with the dependencies it needs to execute. In our case that would be the `scikit-learn` package, which in turn depends on a bunch of other packages.
-Luckily we have pip to figure out the dependency tree for us. The only thing we have to do is specify the right versions of the packages. There is a potential pitfall in this step (especially if you're working on a Windows machine) as you might think that you can simply reuse the packages already installed on your machine. However, AWS Lambda is running in a Linux environment, so the Python packages for Windows __won't work__! Instead we can ask pip to download the Linux versions of the dependencies we want by specifying `--platform manylinux1_x86_64`.  
+Luckily we have pip to figure out the dependency tree for us. The only thing we have to do is specify the right versions of the packages. There is a potential pitfall in this step (especially if you're working on a Windows machine) as you might think that you can simply reuse the packages already installed on your machine. However, AWS Lambda is running in a Linux environment, so the Python packages for Windows __won't work__! Instead we can ask pip to download the Linux versions of the dependencies we want by specifying `--platform manylinux1_x86_64`.
 
 ```
 pip download --python-version 38 --abi cp38 --platform manylinux1_x86_64 --only-binary=:all: --no-binary=:none: scikit-learn
 ```
 Note: This example assumes our Lamda function is running on Pyton 3.8. If that is not the case simply adjust the `--python-version` and `--abi` arguments. Pip will download the packaged `.whl` files to the location you are currently at. By specifying `--only-binary=:all: --no-binary=:none:` we tell pip that we also want to download all the packages that the `sklearn` package depends on.
 
-Now we're nearly ready to make a Lambda layer. The only things we have to do now is to unpack the `.whl` files and put them into the right folder structure. Unpacking is easy. We can do this on a Linux machine by calling `unzip path/to/file.whl` and on Windows by renaming `.whl` to `.zip` and simply extracting the files. Repeat this step for each package (in our case it should be `joblib`, `numpy`, `scikit_learn`, `scipy` and `threadpoolctl`). All folders called `*.dist-info` can safely be deleted. 
+Now we're nearly ready to make a Lambda layer. The only things we have to do now is to unpack the `.whl` files and put them into the right folder structure. Unpacking is easy. We can do this on a Linux machine by calling `unzip path/to/file.whl` and on Windows by renaming `.whl` to `.zip` and simply extracting the files. Repeat this step for each package (in our case it should be `joblib`, `numpy`, `scikit_learn`, `scipy` and `threadpoolctl`). All folders called `*.dist-info` can safely be deleted.
 
 In order to make our Lambda function aware of the provided packages they have to be organized into a specific folder structure. The following diagram shows the structure and where to place all the extracted packages:
 
 ```
 python/
-└── lib/ 
+└── lib/
     └── python3.8/
         └── site-packages/
-            ├── joblib/  
+            ├── joblib/
             ├── numpy/
             ├── numpy.libs/
             ├── scikit_learn.libs/
             ├── scipy/
             ├── scipy.libs/
             ├── sklearn/
-            └── threadpoolctl.py                    
+            └── threadpoolctl.py
 ```
 Note: Again we are assuming that we are using Python 3.8. If you are using a different version adjust the folder name. Zip the whole folder structure before going on to the next step.
 
@@ -73,7 +73,7 @@ Congrats! You successfully created a Lambda layer!
 Now to some Data Science. Before we can serve a ML model and do inference, we have to create and train it. This toy example will train a Random Forest classifier on the [Iris data set](https://en.wikipedia.org/wiki/Iris_flower_data_set) and save the pretrained model as a file.
 To view the whole code go to [train.py](src/train.py).
 
-First we import some dependencies and load the dataset from the pre-installed datasets in `sklearn`. 
+First we import some dependencies and load the dataset from the pre-installed datasets in `sklearn`.
 ```python
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
@@ -151,14 +151,14 @@ In the AWS Management Console search for "AWS Lambda". In the left-hand menu cho
     <br>
 </div>
 
-Under "Function code" click the "Actions" drop-down and choose "Upload a .zip file". 
+Under "Function code" click the "Actions" drop-down and choose "Upload a .zip file".
 
 <div align="center">
 	<img width=800 src="images/function2.PNG" alt="function2">
     <br>
 </div>
 
-Upload the `.zip` file containing "lambda_function.py" and "model.joblib". 
+Upload the `.zip` file containing "lambda_function.py" and "model.joblib".
 
 You can test the function by creating a Test. Go to Test > Configure Events > Create new test event. Provide a test name and the following body:
 ```JSON
@@ -181,7 +181,7 @@ Response:
 
 ## 4. Configuring API Gateway
 
-This is great!. Our Lambda function works and is __hosting a ML model__! However, it has no way to communicate with the outside world and is pretty useless. Thus, we need to define a trigger to activate the execution of the function and figure a way to input data. AWS offers offers an integrated API service called API Gateway. We can easily define an API Gateway trigger by clicking "Add trigger" in the lambda function designer and select API Gateway. 
+This is great!. Our Lambda function works and is __hosting a ML model__! However, it has no way to communicate with the outside world and is pretty useless. Thus, we need to define a trigger to activate the execution of the function and figure a way to input data. AWS offers offers an integrated API service called API Gateway. We can easily define an API Gateway trigger by clicking "Add trigger" in the lambda function designer and select API Gateway.
 
 <div align="center">
 	<img width=500 src="images/api1.PNG" alt="api1">
@@ -196,7 +196,7 @@ Choose "REST API" as API type and "Open" as Security and click "Create".
 </div>
 
 Back in the terminal of your Lambda function click on the link of your newly created API in the "API-Gateway" section.
-This will bring you directly to the configuration terminal for your API. 
+This will bring you directly to the configuration terminal for your API.
 
 ### 4.1 POST Request
 There are different ways to communicate with the REST API. POST and GET requests are two of the most common. To configure your API to accept POST requests click the "Actions" drop-down menu and choose "Create Method". In the created drop-down menu choose "POST".
@@ -261,7 +261,7 @@ Good job! You did it! You deployed your own Machine Learning model in the cloud 
 
 ## Appendix 1: Memory and Timeout settings
 
-We haven't touched upon this topic before as AWS took care of it automatically and it wasn't a big issue. However, once you want to serve more complex, computationally heavy models, the CPU and timeout settings could become a bottleneck or even lead to a failure if not configured correctly. When we set up our Lambda function it was configured with the default parameters for CPU Memory (128 MB) and Timeout (3 seconds). This is good enough for our simple model and still guarantees a response in a reasonable amount of time. 
+We haven't touched upon this topic before as AWS took care of it automatically and it wasn't a big issue. However, once you want to serve more complex, computationally heavy models, the CPU and timeout settings could become a bottleneck or even lead to a failure if not configured correctly. When we set up our Lambda function it was configured with the default parameters for CPU Memory (128 MB) and Timeout (3 seconds). This is good enough for our simple model and still guarantees a response in a reasonable amount of time.
 <div align="center">
 	<img width=500 src="images/settings.PNG" alt="settings">
     <br>
@@ -275,16 +275,17 @@ We can check response times of our lambda functions by enabling active tracing a
 <div align="center">
 	<img width=800 src="images/xray.PNG" alt="xray">
     <br>
-    We can see that providing our Lambda function with four times the available CPU memory leads to an over four times faster response. Note: Just ignore the traces with response time > 3 seconds, those are "cold starts". 
+    We can see that providing our Lambda function with four times the available CPU memory leads to an over four times faster response. Note: Just ignore the traces with response time > 3 seconds, those are "cold starts".
     <br>
     <br>
 </div>
 
 ## Appendix 2: Serverless Application Model
 
-Make a new S3 Bucket
+In a real-world setup we do not want to configure all the steps mentioned above manually in the Management Console. Instead we would probably want to automate the build and deploy of the entire application. As all the use services (AWS Lambda and API Gateway) are serverless we are extra lucky and can make use of the Serverless Application Model (short [SAM](https://aws.amazon.com/serverless/sam/)) which is built on top of CloudFormation. In a simple `template.yaml` file we can define our infrastructure/resource-stack and afterwards deploy it.
+
 ```
-aws s3 mb s3://sam-sklearn-lambda-function
+sam build
 ```
 
 Package the application and upload it
