@@ -18,7 +18,7 @@ Resources:
           Type: Api
           Properties:
             Path: /MyLambdaFunction
-            Method: POST
+            Method: ANY
   SklearnLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:

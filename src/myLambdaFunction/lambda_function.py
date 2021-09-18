@@ -9,12 +9,15 @@ rfc = load('model.joblib')
 
 def lambda_handler(event, context):
 
-    event = json.loads(event['body'])
+    if event["httpMethod"] == "POST":
+        req = json.loads(event['body'])
+    elif event["httpMethod"] == "GET":
+        req = event["queryStringParameters"]
 
-    sepal_length = float(event['sl'])
-    sepal_width = float(event['sw'])
-    petal_length = float(event['pl'])
-    petal_width = float(event['pw'])
+    sepal_length = float(req['sl'])
+    sepal_width = float(req['sw'])
+    petal_length = float(req['pl'])
+    petal_width = float(req['pw'])
 
     y = rfc.predict([[sepal_length, sepal_width, petal_length, petal_width]])[0]
     c = target_names[y]
