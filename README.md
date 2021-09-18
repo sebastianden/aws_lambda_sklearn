@@ -142,7 +142,7 @@ def lambda_handler(event, context):
         },
     }
 ```
-You can view the whole function in [lambda_function.py](src/myLambdaFunction/lambda_function.py). Zip "lambda_function.py" and model.joblib" before going on to the next step.
+Zip "lambda_function.py" and model.joblib" before going on to the next step.
 
 In the AWS Management Console search for "AWS Lambda". In the left-hand menu choose "Functions" and click "Create function". Give the function a name and select a runtime.
 
@@ -282,18 +282,13 @@ We can check response times of our lambda functions by enabling active tracing a
 
 ## Appendix 2: Serverless Application Model
 
-In a real-world setup we do not want to configure all the steps mentioned above manually in the Management Console. Instead we would probably want to automate the build and deploy of the entire application. As all the use services (AWS Lambda and API Gateway) are serverless we are extra lucky and can make use of the Serverless Application Model (short [SAM](https://aws.amazon.com/serverless/sam/)) which is built on top of CloudFormation. In a simple `template.yaml` file we can define our infrastructure/resource-stack and afterwards deploy it.
+In a real-world setup we do not want to configure all the steps mentioned above manually in the Management Console. Instead we would probably want to automate the build and deploy of the entire application. As all the use services (AWS Lambda and API Gateway) are serverless we are extra lucky and can make use of the Serverless Application Model (short [SAM](https://aws.amazon.com/serverless/sam/)) which is built on top of CloudFormation. In a simple `template.yaml` file we can define our infrastructure/resource-stack and afterwards deploy it. The following command will build our application, downloading all neccessary dependencies (e.g. for our lambda layer) and storing them in a separate folder.
 
 ```
 sam build
 ```
-
-Package the application and upload it
+To deploy the application in your AWS account run:
 ```
-sam package --s3-bucket sam-sklearn-lambda-function --template-file template.yaml --output-template-file src/gen/cloudformation.yaml
+sam deploy --guided
 ```
-
-Deploy the serverless application
-```
-sam deploy --template-file src\gen\cloudformation.yaml --stack-name sam-stack --capabilities CAPABILITY_IAM
-```
+Short info: As the SAM framework uses the Lambda Proxy integration in API Gateway the function was slightly modified with respect to the one shown above. Things such as extracting the query strings out of the input and formatting the response in the right fashion have to be handled directly in the lambda function as the API is "just" a proxy.
