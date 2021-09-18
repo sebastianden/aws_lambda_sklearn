@@ -20,12 +20,14 @@ def lambda_handler(event, context):
     petal_width = float(req['pw'])
 
     y = rfc.predict([[sepal_length, sepal_width, petal_length, petal_width]])[0]
-    c = target_names[y]
+    c = {}
+    c['response'] = target_names[y]
+    c['input'] = req
     print(c)
 
     return {
         'statusCode': 200,
-        'body': c,
+        'body': json.dumps(c),
         'headers': {
             'Content-Type': 'application/json',
         },
